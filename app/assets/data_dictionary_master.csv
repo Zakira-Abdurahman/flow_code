@@ -1,0 +1,42 @@
+column,dtype,role,source,description,derivation,in_train,in_test
+record_id,object,train only,ride_demand_train.csv,Original trip record ID,kept from raw,True,False
+zone,object,key,trips,One of the 12 canonical zones,"normalize_zone: trim, case, aliases",True,True
+pickup_hour,object,key,trips,"Hour of demand, Addis local time (EAT), YYYY-MM-DD HH:MM:SS",parse_timestamps with explicit formats; offsets converted to EAT,True,True
+trips,int64,target (train only),trips,Number of trips in the zone-hour,-1 -> missing (dropped); x8 values divided by 8; conflicts removed,True,False
+avg_fare_birr,float64,"train only, not a feature",trips,Average fare in the hour (birr),blanks filled with train median by zone x hour,True,False
+avg_wait_min,float64,"train only, not a feature",trips,Average wait in the hour (minutes),"-1 -> missing, filled with train median by zone x hour",True,False
+active_drivers,int64,"train only, not a feature",trips,Drivers active in the hour,kept from raw; same-hour value so excluded from features,True,False
+fare_imputed,int64,train only,cleaning,1 if avg_fare_birr was filled,flag from impute_group_median,True,False
+wait_imputed,int64,train only,cleaning,1 if avg_wait_min was filled,flag from impute_group_median,True,False
+temp_c,float64,feature,weather,Temperature (°C),°F values > 40 converted; gaps interpolated (<= 3h) or month x hour median,True,True
+rain_mm,float64,feature,weather,Rain in the hour (mm),-9999 -> missing -> 0,True,True
+humidity_pct,float64,feature,weather,Relative humidity (%),gaps interpolated (<= 3h) or month x hour median,True,True
+wind_kmh,float64,feature,weather,Wind speed (km/h),gaps interpolated (<= 3h) or month x hour median,True,True
+is_forecast,int64,flag,weather,"1 if the weather row is a forecast, not an observation",from data_type,True,True
+weather_row_missing,int64,flag,weather,1 if the hour had no weather row at all,full hourly index,True,True
+weather_imputed,int64,feature,weather,1 if any weather value in the hour was estimated,set before filling,True,True
+rain_3h,float64,feature,weather,Rain over the last 3 hours (mm),rolling 3-hour sum of rain_mm,True,True
+rain_class,int64,feature,weather,"0 dry, 1 <=1 mm, 2 1-5 mm, 3 >5 mm",pd.cut of rain_mm,True,True
+ev_in_window,int64,feature,events,1 if any non-cancelled event window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+ev_attendance,int64,feature,events,Total expected attendance of events whose window covers the zone-hour,"sum over events in [start-2h, end+2h)",True,True
+ev_concert,int64,feature,events,1 if a concert window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+ev_conference,int64,feature,events,1 if a conference window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+ev_exhibition,int64,feature,events,1 if a exhibition window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+ev_football_match,int64,feature,events,1 if a football match window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+ev_road_closure,int64,feature,events,1 if a road closure window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+ev_sports_run,int64,feature,events,1 if a sports run window covers the zone-hour,"interval join [start-2h, end+2h)",True,True
+is_holiday,int64,feature,events,1 if a public holiday covers the zone-hour,"interval join [start, end)",True,True
+is_school_break,int64,feature,events,1 if a school break covers the zone-hour,"interval join [start, end)",True,True
+hours_to_next_event,float64,feature,events,Hours until the next event starts in the zone (cap 48),merge_asof forward on start,True,True
+hours_since_event_end,float64,feature,events,Hours since the last event ended in the zone (cap 48),merge_asof backward on end,True,True
+hour,int64,feature,calendar,Hour of day 0-23,pickup_hour.hour,True,True
+dow,int64,feature,calendar,"Day of week, 0 = Monday",pickup_hour.dayofweek,True,True
+is_weekend,int64,feature,calendar,1 on Saturday and Sunday,dow >= 5,True,True
+month,int64,feature,calendar,Month 1-12,pickup_hour.month,True,True
+days_to_month_end,int64,feature,calendar,Days left in the month (payday proxy),days_in_month - day,True,True
+trend_days,float64,feature,calendar,Days since 1 Jan 2025,(pickup_hour - 2025-01-01) / 1 day,True,True
+lag_14d,float64,feature,trips history,Trips in the same zone and hour 14 days earlier,shift of train trips by 14 days,True,True
+lag_21d,float64,feature,trips history,Trips in the same zone and hour 21 days earlier,shift of train trips by 21 days,True,True
+lag_28d,float64,feature,trips history,Trips in the same zone and hour 28 days earlier,shift of train trips by 28 days,True,True
+lag_mean_14_28d,float64,feature,trips history,Mean of the 14/21/28-day lags,"row mean, ignoring missing",True,True
+row_id,object,test only,ride_demand_test.csv,Test row ID used in the submission,kept from raw,False,True

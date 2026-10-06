@@ -1,0 +1,41 @@
+#,file,column(s),issue_type,rows_affected,pct_rows,fix_applied,why
+1,ride_demand_train.csv,zone,Inconsistent case / extra whitespace,27533,32.22,"trim, collapse spaces, case-insensitive match",Same zone would otherwise count as different groups
+2,ride_demand_train.csv,zone,"Aliases / misspellings (Piazza, Mercato, C.M.C, Bole Rd, ...)",4858,5.68,alias map to canonical label; unknown labels raise,All tables must share the same 12 zone keys
+3,ride_demand_train.csv,pickup_hour,"Mixed timestamp formats (DD/MM/YYYY, ISO with offset)",38574,45.14,explicit format per pattern (day-first verified),Guessing can swap day/month and break hourly joins
+4,ride_demand_train.csv,pickup_hour,Mixed clocks: +03:00 offset vs naive,12810,14.99,"convert to Africa/Addis_Ababa, drop tz",All tables must share one clock for the joins
+5,ride_demand_train.csv,trips,Sentinel -1,681,0.8,set to NaN (missing target),"-1 is a no-data code, not a count"
+6,ride_demand_train.csv,avg_wait_min,Sentinel -1,1707,2.0,"set to NaN, then imputed",A negative wait is impossible
+7,ride_demand_train.csv,trips,Outlier: values inflated x8 (trips/driver >= 4),124,0.15,divide by 8 where ratio > 3 and trips % 8 == 0,Physically implausible; /8 restores the normal ratio
+8,ride_demand_train.csv,trips,"Outlier: implausible ratio, not a multiple of 8",1,0.0,row dropped,True value unrecoverable
+9,ride_demand_train.csv,"zone, pickup_hour",Duplicate zone-hours with different trip counts,724,0.85,"removed from train, saved to trip_conflicts.csv",No evidence which count is correct
+10,ride_demand_train.csv,"zone, pickup_hour",Duplicate zone-hours with the same or one missing trip count,483,0.57,"keep 1 row per zone-hour (most complete, then first)",Double-counts demand; breaks many-to-one joins
+11,ride_demand_train.csv,trips,Missing target (blank or -1),1510,1.77,row dropped from train,Imputing the target invents labels
+12,ride_demand_train.csv,avg_fare_birr,Missing values,1277,1.49,train median by zone x hour (+ fare_imputed flag),Fare follows a zone/hour pattern
+13,ride_demand_train.csv,avg_wait_min,Spike at 1.2 min (platform floor) - checked,8967,10.49,kept unchanged,"Plausible minimum wait, mostly at night"
+14,weather_hourly.csv,timestamp,"Mixed timestamp formats (ISO Z, DD/MM/YYYY)",732,9.71,explicit format per pattern (day-first verified),Guessing can swap day/month and break hourly joins
+15,weather_hourly.csv,timestamp,UTC clock (both Z and slash rows),7538,100.0,"convert UTC to Africa/Addis_Ababa (+3h), drop tz",All tables must share one clock for the joins
+16,weather_hourly.csv,rain_mm,Sentinel -9999,76,1.01,"set to NaN, then filled",-9999 is a no-data code
+17,weather_hourly.csv,temp_c,Unit error: Fahrenheit values (54-77),353,4.68,(F - 32) * 5/9 where temp_c > 40,Addis is never above 40 C; converted values fit the normal range
+18,weather_hourly.csv,timestamp,Duplicate hours (observed vs forecast / same hour twice),75,0.99,"keep 1 row per hour: observed first, then most complete",Weather join must be many-to-one
+19,weather_hourly.csv,timestamp,Missing hours (no weather row),193,2.56,"added to a full hourly index, then filled below",Hidden gaps would make lag features use the wrong hours
+20,weather_hourly.csv,temp_c,Missing values,42,0.56,"interpolate gaps <= 3h, else train median by month x hour",Temperature/humidity change smoothly hour to hour
+21,weather_hourly.csv,humidity_pct,Missing values,153,2.03,"interpolate gaps <= 3h, else train median by month x hour",Temperature/humidity change smoothly hour to hour
+22,events_calendar.csv,event_type,"Inconsistent spellings (case, spaces, underscores)",94,56.97,"lower-case, spaces -> '_', 8 types",One label per type for event features
+23,events_calendar.csv,zone,Sub-city in brackets / case / aliases,67,40.61,normalize_zone (same map as trips),All tables must share the same 12 zone keys
+24,events_calendar.csv,zone,Several zones in one cell ('A & B'),5,3.03,"expand_zones: one row per zone, event_id kept",The event affects each listed zone
+25,events_calendar.csv,zone,"Citywide labels (Citywide, ALL, All zones, city-wide)",15,9.09,"expand_zones: one row for each of the 12 zones, is_citywide=1",Citywide is not a 13th zone
+26,events_calendar.csv,"start_datetime, end_datetime","Mixed timestamp formats (ISO, DD/MM/YYYY, 'Mon DD, YYYY HH:MM AM/PM')",129,78.18,"parse_timestamps with explicit formats (day-first verified), local EAT",Guessing can swap day/month and misplace event windows
+27,events_calendar.csv,end_datetime,End at 23:59 instead of a full hour,15,9.09,rounded up to the next full hour (exclusive end),Event windows must cover whole zone-hours
+28,events_calendar.csv,status,Inconsistent case / trailing spaces,28,16.97,trim + lower-case -> confirmed / cancelled,One label per status
+29,events_calendar.csv,status,Cancelled events,6,3.64,kept in the file with is_cancelled=1; excluded from joins and medians,A cancelled event draws no crowd
+30,events_calendar.csv,event_id,Duplicate events re-issued with new IDs,6,3.64,"dedupe on every column except event_id; original EVT-0xxx kept (EVT-9000, EVT-9001, EVT-9002, EVT-9003, EVT-9004, EVT-9005)",The same event would be counted twice
+31,events_calendar.csv,end_datetime,Missing end time,4,2.42,start + train median duration for the event type (end_imputed=1),The event window needs an end
+32,events_calendar.csv,end_datetime,End before start,1,0.61,treated as missing and filled the same way (EVT-0139),An event cannot end before it starts
+33,events_calendar.csv,expected_attendance,"Stored as text ('approx 34000', '2,039')",23,13.94,to_number: removed 'approx' and commas,Attendance must be numeric for features
+34,events_calendar.csv,expected_attendance,Missing where attendance does not apply,37,22.42,"set to 0 (holidays, road closures, school breaks)",These events have no ticketed crowd
+35,events_calendar.csv,expected_attendance,Missing where attendance applies,16,9.7,train median for the event type (attendance_imputed=1),Keeps the attendance feature usable
+36,events_calendar.csv,venue,Missing venue (checked),37,22.42,filled 'none',"Only missing for holidays, road closures, school breaks"
+37,ride_demand_test.csv,zone,Inconsistent case / extra whitespace,1303,32.32,same normalize_zone as train,Test must use the same 12 zone keys as train
+38,ride_demand_test.csv,zone,"Aliases / misspellings (Piazza, Mercato, C.M.C, Bole Rd, ...)",235,5.83,same alias map as train,Test must use the same 12 zone keys as train
+39,ride_demand_test.csv,pickup_hour,"Mixed timestamp formats (DD/MM/YYYY, ISO with offset)",1771,43.92,same TRIP_FORMATS as train (day-first verified),Must land on the same hourly keys as the features
+40,ride_demand_test.csv,pickup_hour,Mixed clocks: +03:00 offset vs naive,573,14.21,"convert to Africa/Addis_Ababa, drop tz",One clock for every table

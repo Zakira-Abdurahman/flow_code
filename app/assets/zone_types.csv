@@ -1,0 +1,13 @@
+zone,zone_type,cluster
+Arat Kilo,Business / office (weekday commute),2
+Ayat,"Residential (evening peak, weekend >= weekday)",0
+Bole,"Leisure / nightlife (late, weekend-heavy)",4
+CMC,"Residential (evening peak, weekend >= weekday)",0
+Gerji,"Residential (evening peak, weekend >= weekday)",0
+Kazanchis,Business / office (weekday commute),2
+Kolfe,"Residential (evening peak, weekend >= weekday)",0
+Lideta,Mixed hub (commute + busy midday),3
+Megenagna,Mixed hub (commute + busy midday),3
+Merkato,Market (midday peak),1
+Piassa,Business / office (weekday commute),2
+Sarbet,"Residential (evening peak, weekend >= weekday)",0
