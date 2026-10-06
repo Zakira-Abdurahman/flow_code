@@ -1,0 +1,148 @@
+{
+ "model_name": "LightGBM (tuned)",
+ "features": [
+  "hour",
+  "dow",
+  "is_weekend",
+  "month",
+  "days_to_month_end",
+  "is_holiday",
+  "is_school_break",
+  "zone_code",
+  "zone_type_code",
+  "trend_days",
+  "lag_14d",
+  "lag_21d",
+  "lag_28d",
+  "lag_mean_14_28d",
+  "temp_c",
+  "rain_mm",
+  "rain_3h",
+  "rain_class",
+  "humidity_pct",
+  "wind_kmh",
+  "weather_imputed",
+  "ev_in_window",
+  "ev_attendance",
+  "hours_to_next_event",
+  "hours_since_event_end",
+  "ev_concert",
+  "ev_conference",
+  "ev_exhibition",
+  "ev_football_match",
+  "ev_road_closure",
+  "ev_sports_run"
+ ],
+ "feature_groups": {
+  "calendar": [
+   "hour",
+   "dow",
+   "is_weekend",
+   "month",
+   "days_to_month_end",
+   "is_holiday",
+   "is_school_break"
+  ],
+  "zone": [
+   "zone_code",
+   "zone_type_code"
+  ],
+  "trend": [
+   "trend_days",
+   "lag_14d",
+   "lag_21d",
+   "lag_28d",
+   "lag_mean_14_28d"
+  ],
+  "weather": [
+   "temp_c",
+   "rain_mm",
+   "rain_3h",
+   "rain_class",
+   "humidity_pct",
+   "wind_kmh",
+   "weather_imputed"
+  ],
+  "events": [
+   "ev_in_window",
+   "ev_attendance",
+   "hours_to_next_event",
+   "hours_since_event_end",
+   "ev_concert",
+   "ev_conference",
+   "ev_exhibition",
+   "ev_football_match",
+   "ev_road_closure",
+   "ev_sports_run"
+  ]
+ },
+ "zone_codes": {
+  "Arat Kilo": 0,
+  "Ayat": 1,
+  "Bole": 2,
+  "CMC": 3,
+  "Gerji": 4,
+  "Kazanchis": 5,
+  "Kolfe": 6,
+  "Lideta": 7,
+  "Megenagna": 8,
+  "Merkato": 9,
+  "Piassa": 10,
+  "Sarbet": 11
+ },
+ "zone_type": {
+  "Arat Kilo": "Business / office (weekday commute)",
+  "Ayat": "Residential (evening peak, weekend >= weekday)",
+  "Bole": "Leisure / nightlife (late, weekend-heavy)",
+  "CMC": "Residential (evening peak, weekend >= weekday)",
+  "Gerji": "Residential (evening peak, weekend >= weekday)",
+  "Kazanchis": "Business / office (weekday commute)",
+  "Kolfe": "Residential (evening peak, weekend >= weekday)",
+  "Lideta": "Mixed hub (commute + busy midday)",
+  "Megenagna": "Mixed hub (commute + busy midday)",
+  "Merkato": "Market (midday peak)",
+  "Piassa": "Business / office (weekday commute)",
+  "Sarbet": "Residential (evening peak, weekend >= weekday)"
+ },
+ "zone_type_codes": {
+  "Business / office (weekday commute)": 0,
+  "Leisure / nightlife (late, weekend-heavy)": 1,
+  "Residential (evening peak, weekend >= weekday)": 4,
+  "Mixed hub (commute + busy midday)": 3,
+  "Market (midday peak)": 2
+ },
+ "params": {
+  "objective": "tweedie",
+  "n_estimators": 1000,
+  "learning_rate": 0.1,
+  "num_leaves": 15,
+  "min_child_samples": 20,
+  "subsample": 0.8,
+  "subsample_freq": 1,
+  "colsample_bytree": 0.9,
+  "random_state": 42,
+  "verbose": -1,
+  "reg_lambda": 10.0
+ },
+ "trained_on": "2025-01-01 00:00 to 2025-10-31 23:00 (Addis time)",
+ "n_train_rows": 82742,
+ "trips_per_driver_hour": 1.3076923076923077,
+ "validation": {
+  "rmse_mean": 9.394,
+  "rmse_sd": 0.864,
+  "mae_mean": 6.066,
+  "folds": [
+   "2025-09-06",
+   "2025-09-20",
+   "2025-10-04",
+   "2025-10-18"
+  ],
+  "horizon_days": 14
+ },
+ "versions": {
+  "lightgbm": "4.6.0",
+  "scikit-learn": "1.6.1",
+  "pandas": "2.2.3",
+  "numpy": "2.4.6"
+ }
+}
