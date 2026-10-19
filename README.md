@@ -1,6 +1,6 @@
 # team_flowcode — Addis Ababa ride-demand forecast
 
-**Team:** flowcode · **Members:** Amina Aman, Niyat Debesay, Henok Solomon, Zakria Abdurahman · **Competition:** Flowcode Addis Ababa Ride-Demand Forecast, 2025 · **Date:** 2024-06-19
+**Team:** flowcode · **Members:** Amina Aman, Niyat Debesay, Henok Solomon, Zakria Abdurahman · **Competition:** Flowcode Addis Ababa Ride-Demand Forecast, 2025 · **Date:** 2026-06-19
 
 ## Summary
 
